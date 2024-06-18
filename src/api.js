@@ -1,4 +1,3 @@
-// src/api.js
 const API_URL = 'http://127.0.0.1:5000';
 
 export const login = async (username, password) => {
@@ -39,6 +38,21 @@ export const fetchSprint = async (token, boardId) => {
     });
     if (!response.ok) {
         throw new Error('Failed to fetch sprint');
+    }
+    return response.json();
+};
+
+export const summarizeSprint = async (token, sprintData) => {
+    const response = await fetch(`${API_URL}/summarize-sprint`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ sprint_data: sprintData })
+    });
+    if (!response.ok) {
+        throw new Error('Failed to summarize sprint');
     }
     return response.json();
 };

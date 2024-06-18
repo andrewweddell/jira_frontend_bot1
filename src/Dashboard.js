@@ -1,6 +1,5 @@
-// src/Dashboard.js
 import React, { useState } from 'react';
-import { fetchBoards, fetchSprint } from './api';
+import { fetchBoards, fetchSprint, summarizeSprint } from './api';
 import {
     Button, Accordion, AccordionSummary, AccordionDetails,
     Typography, Card, CardContent, CardHeader, List, ListItem, ListItemText, Grid
@@ -27,6 +26,19 @@ const Dashboard = ({ token }) => {
             setSprints(data.sprint ? [data.sprint] : []);
         } catch (err) {
             setError('Failed to fetch sprint');
+        }
+    };
+
+    const handleSummarizeSprint = async (sprint) => {
+        try {
+            const summaryData = await summarizeSprint(token, sprint);
+            setSprints(prevSprints =>
+                prevSprints.map(s =>
+                    s.name === sprint.name ? { ...s, summary_ai: summaryData.summary_ai } : s
+                )
+            );
+        } catch (err) {
+            setError('Failed to summarize sprint');
         }
     };
 
@@ -68,6 +80,13 @@ const Dashboard = ({ token }) => {
                                                 </ListItem>
                                             ))}
                                         </List>
+                                        <Button
+                                            variant="contained"
+                                            color="primary"
+                                            onClick={() => handleSummarizeSprint(sprint)}
+                                        >
+                                            Summarize
+                                        </Button>
                                         <Typography variant="h6">Summary</Typography>
                                         <Typography>{sprint.summary_ai}</Typography>
                                     </CardContent>
