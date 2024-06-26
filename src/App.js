@@ -18,7 +18,7 @@ const App = () => {
     return (
         <ThemeProvider theme={darkMode ? darkTheme : lightTheme}>
             <CssBaseline />
-            <Container maxWidth="md">
+            <Container maxWidth="xl">
                 <AppBar position="static" sx={{ background: 'transparent', boxShadow: 'none', borderRadius: 2, marginTop: 2 }}>
                     <Toolbar>
                         <IconButton edge="end" color="inherit" onClick={toggleDarkMode}>

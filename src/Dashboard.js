@@ -7,14 +7,15 @@ import {
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Alert } from '@mui/material';
+import './Dashboard.css';
 
 const statusColors = {
-    'Done': '#d4edda',        // Light Green
-    'In Progress': '#fff3cd', // Light Orange
-    'UAT': '#d1ecf1',         // Light Blue
-    'IN TESTING': '#d9edf7',  // Light Teal
-    'Groomed': '#e2e3e5',     // Light Gray
-    'To Do': '#f8d7da'        // Light Red
+    'Done': 'done',
+    'In Progress': 'in-progress',
+    'UAT': 'uat',
+    'IN TESTING': 'in-testing',
+    'Groomed': 'groomed',
+    'To Do': 'to-do'
 };
 
 const Dashboard = ({ token }) => {
@@ -109,7 +110,7 @@ const Dashboard = ({ token }) => {
     };
 
     return (
-        <Container maxWidth="lg" sx={{ marginTop: 4 }}>
+        <Container maxWidth="xl" sx={{ marginTop: 4 }}>
             <Typography variant="h2" gutterBottom>Dashboard</Typography>
             <Button variant="contained" color="primary" onClick={handleFetchBoards} disabled={loading}>
                 {loading ? <CircularProgress size={24} /> : 'Fetch Boards'}
@@ -134,7 +135,7 @@ const Dashboard = ({ token }) => {
                 </div>
             )}
             {sprints.length > 0 && (
-                <div style={{ marginTop: '20px' }}>
+                <div className="dashboard-container">
                     <Typography variant="h3" gutterBottom>Sprints</Typography>
                     <Grid container spacing={3}>
                         {sprints.map(sprint => (
@@ -142,27 +143,22 @@ const Dashboard = ({ token }) => {
                                 <Card sx={{ borderRadius: 2 }}>
                                     <CardContent>
                                         <Typography variant="h6">{sprint.name}</Typography>
-                                        <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
-                                            <Table>
+                                        <TableContainer component={Paper} className="table-container" sx={{ borderRadius: 2 }}>
+                                            <Table className="table">
                                                 <TableHead>
                                                     <TableRow>
-                                                        <TableCell>Ticket</TableCell>
-                                                        <TableCell>Summary</TableCell>
-                                                        <TableCell>Status</TableCell>
+                                                        <TableCell className="table-cell">Ticket</TableCell>
+                                                        <TableCell className="table-cell">Summary</TableCell>
+                                                        <TableCell className="table-cell">Status</TableCell>
                                                     </TableRow>
                                                 </TableHead>
                                                 <TableBody>
                                                     {sprint.tickets.sort((a, b) => a.status.localeCompare(b.status)).map(ticket => (
-                                                        <TableRow key={ticket.key}>
-                                                            <TableCell>{ticket.key}</TableCell>
-                                                            <TableCell>{ticket.summary}</TableCell>
-                                                            <TableCell>
-                                                                <span style={{
-                                                                    backgroundColor: statusColors[ticket.status] || 'white',
-                                                                    padding: '4px 8px',
-                                                                    borderRadius: '8px',
-                                                                    display: 'inline-block'
-                                                                }}>
+                                                        <TableRow key={ticket.key} className="table-row">
+                                                            <TableCell className="table-cell">{ticket.key}</TableCell>
+                                                            <TableCell className="table-cell">{ticket.summary}</TableCell>
+                                                            <TableCell className="table-cell">
+                                                                <span className={`status-span ${statusColors[ticket.status]}`}>
                                                                     {ticket.status}
                                                                 </span>
                                                             </TableCell>
