@@ -14,31 +14,52 @@ const Dashboard = ({ token }) => {
     const handleFetchBoards = async () => {
         try {
             const data = await fetchBoards(token);
-            setBoards(data.values);
+            console.log('Fetched boards data:', data); // Add logging to check data
+            if (Array.isArray(data)) {
+                setBoards(data);
+            } else {
+                setError('No boards found or data format is incorrect');
+                console.error('Boards data format is incorrect:', data);
+            }
         } catch (err) {
             setError('Failed to fetch boards');
+            console.error('Error fetching boards:', err);
         }
     };
 
     const handleFetchSprint = async (boardId) => {
         try {
             const data = await fetchSprint(token, boardId);
-            setSprints(data.sprint ? [data.sprint] : []);
+            console.log('Fetched sprint data:', data); // Add logging to check data
+            if (data && data.sprint) {
+                setSprints([data.sprint]);
+            } else {
+                setError('No sprint found or data format is incorrect');
+                console.error('Sprint data format is incorrect:', data);
+            }
         } catch (err) {
             setError('Failed to fetch sprint');
+            console.error('Error fetching sprint:', err);
         }
     };
 
     const handleSummarizeSprint = async (sprint) => {
         try {
             const summaryData = await summarizeSprint(token, sprint);
-            setSprints(prevSprints =>
-                prevSprints.map(s =>
-                    s.name === sprint.name ? { ...s, summary_ai: summaryData.summary_ai } : s
-                )
-            );
+            console.log('Fetched summary data:', summaryData); // Add logging to check data
+            if (summaryData && summaryData.summary_ai) {
+                setSprints(prevSprints =>
+                    prevSprints.map(s =>
+                        s.name === sprint.name ? { ...s, summary_ai: summaryData.summary_ai } : s
+                    )
+                );
+            } else {
+                setError('Failed to generate summary or data format is incorrect');
+                console.error('Summary data format is incorrect:', summaryData);
+            }
         } catch (err) {
             setError('Failed to summarize sprint');
+            console.error('Error summarizing sprint:', err);
         }
     };
 
