@@ -42,6 +42,21 @@ export const fetchSprint = async (token, boardId) => {
     return response.json();
 };
 
+export const fetchLatestSprintFromDB = async (token, boardId) => {
+    const response = await fetch(`${API_URL}/fetch-latest-sprint-from-db`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ board_id: boardId })
+    });
+    if (!response.ok) {
+        throw new Error('Failed to fetch latest sprint from DB');
+    }
+    return response.json();
+};
+
 export const summarizeSprint = async (token, sprintData) => {
     const response = await fetch(`${API_URL}/summarize-sprint`, {
         method: 'POST',

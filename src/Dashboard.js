@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { fetchBoards, fetchSprint, summarizeSprint } from './api';
+import { fetchBoards, fetchSprint, summarizeSprint, fetchLatestSprintFromDB } from './api';
 import {
     Button, Accordion, AccordionSummary, AccordionDetails,
     Typography, Card, CardContent, CardHeader, List, ListItem, ListItemText, Grid
@@ -14,7 +14,6 @@ const Dashboard = ({ token }) => {
     const handleFetchBoards = async () => {
         try {
             const data = await fetchBoards(token);
-            console.log('Fetched boards data:', data); // Add logging to check data
             if (Array.isArray(data)) {
                 setBoards(data);
             } else {
@@ -30,7 +29,6 @@ const Dashboard = ({ token }) => {
     const handleFetchSprint = async (boardId) => {
         try {
             const data = await fetchSprint(token, boardId);
-            console.log('Fetched sprint data:', data); // Add logging to check data
             if (data && data.sprint) {
                 setSprints([data.sprint]);
             } else {
@@ -43,10 +41,24 @@ const Dashboard = ({ token }) => {
         }
     };
 
+    const handleFetchLatestSprintFromDB = async (boardId) => {
+        try {
+            const data = await fetchLatestSprintFromDB(token, boardId);
+            if (data) {
+                setSprints([data]);
+            } else {
+                setError('No sprint data found in DB');
+                console.error('No sprint data found in DB:', data);
+            }
+        } catch (err) {
+            setError('Failed to fetch sprint from DB');
+            console.error('Error fetching sprint from DB:', err);
+        }
+    };
+
     const handleSummarizeSprint = async (sprint) => {
         try {
             const summaryData = await summarizeSprint(token, sprint);
-            console.log('Fetched summary data:', summaryData); // Add logging to check data
             if (summaryData && summaryData.summary_ai) {
                 setSprints(prevSprints =>
                     prevSprints.map(s =>
@@ -76,6 +88,7 @@ const Dashboard = ({ token }) => {
                             </AccordionSummary>
                             <AccordionDetails>
                                 <Button variant="contained" color="secondary" onClick={() => handleFetchSprint(board.id)}>Fetch Sprint</Button>
+                                <Button variant="contained" color="secondary" onClick={() => handleFetchLatestSprintFromDB(board.id)}>Fetch Latest Sprint from DB</Button>
                             </AccordionDetails>
                         </Accordion>
                     ))}
