@@ -1,11 +1,21 @@
 import React, { useState } from 'react';
 import { fetchBoards, fetchSprint, summarizeSprint, fetchLatestSprintFromDB } from './api';
 import {
-    AppBar, Toolbar, Typography, Button, Container, Grid, Card, CardContent, CardActions,
-    Accordion, AccordionSummary, AccordionDetails, List, ListItem, ListItemText, Snackbar, CircularProgress
+    Button, Accordion, AccordionSummary, AccordionDetails,
+    Typography, Card, CardContent, Grid, Snackbar, CircularProgress, Table,
+    TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Container
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Alert } from '@mui/material';
+
+const statusColors = {
+    'Done': '#d4edda',        // Light Green
+    'In Progress': '#fff3cd', // Light Orange
+    'UAT': '#d1ecf1',         // Light Blue
+    'IN TESTING': '#d9edf7',  // Light Teal
+    'Groomed': '#e2e3e5',     // Light Gray
+    'To Do': '#f8d7da'        // Light Red
+};
 
 const Dashboard = ({ token }) => {
     const [boards, setBoards] = useState([]);
@@ -99,81 +109,90 @@ const Dashboard = ({ token }) => {
     };
 
     return (
-        <Container>
-            <AppBar position="static">
-                <Toolbar>
-                    <Typography variant="h6" sx={{ flexGrow: 1 }}>
-                        Dashboard
-                    </Typography>
-                </Toolbar>
-            </AppBar>
-            <Container sx={{ marginTop: 4 }}>
-                <Button variant="contained" color="primary" onClick={handleFetchBoards} disabled={loading}>
-                    {loading ? <CircularProgress size={24} /> : 'Fetch Boards'}
-                </Button>
-                {boards.length > 0 && (
-                    <Grid container spacing={3} sx={{ marginTop: 2 }}>
-                        {boards.map(board => (
-                            <Grid item xs={12} md={6} key={board.id}>
-                                <Accordion>
-                                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                                        <Typography>{board.name}</Typography>
-                                    </AccordionSummary>
-                                    <AccordionDetails>
-                                        <Button variant="contained" color="secondary" onClick={() => handleFetchSprint(board.id)} disabled={loading}>
-                                            {loading ? <CircularProgress size={24} /> : 'Fetch Sprint'}
+        <Container maxWidth="lg" sx={{ marginTop: 4 }}>
+            <Typography variant="h2" gutterBottom>Dashboard</Typography>
+            <Button variant="contained" color="primary" onClick={handleFetchBoards} disabled={loading}>
+                {loading ? <CircularProgress size={24} /> : 'Fetch Boards'}
+            </Button>
+            {boards.length > 0 && (
+                <div style={{ marginTop: '20px' }}>
+                    {boards.map(board => (
+                        <Accordion key={board.id}>
+                            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                                <Typography>{board.name}</Typography>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                                <Button variant="contained" color="secondary" onClick={() => handleFetchSprint(board.id)} disabled={loading}>
+                                    {loading ? <CircularProgress size={24} /> : 'Fetch Sprint'}
+                                </Button>
+                                <Button variant="contained" color="secondary" onClick={() => handleFetchLatestSprintFromDB(board.id)} disabled={loading}>
+                                    {loading ? <CircularProgress size={24} /> : 'Fetch Latest Sprint from DB'}
+                                </Button>
+                            </AccordionDetails>
+                        </Accordion>
+                    ))}
+                </div>
+            )}
+            {sprints.length > 0 && (
+                <div style={{ marginTop: '20px' }}>
+                    <Typography variant="h3" gutterBottom>Sprints</Typography>
+                    <Grid container spacing={3}>
+                        {sprints.map(sprint => (
+                            <Grid item xs={12} key={sprint.name}>
+                                <Card sx={{ borderRadius: 2 }}>
+                                    <CardContent>
+                                        <Typography variant="h6">{sprint.name}</Typography>
+                                        <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
+                                            <Table>
+                                                <TableHead>
+                                                    <TableRow>
+                                                        <TableCell>Ticket</TableCell>
+                                                        <TableCell>Summary</TableCell>
+                                                        <TableCell>Status</TableCell>
+                                                    </TableRow>
+                                                </TableHead>
+                                                <TableBody>
+                                                    {sprint.tickets.sort((a, b) => a.status.localeCompare(b.status)).map(ticket => (
+                                                        <TableRow key={ticket.key}>
+                                                            <TableCell>{ticket.key}</TableCell>
+                                                            <TableCell>{ticket.summary}</TableCell>
+                                                            <TableCell>
+                                                                <span style={{
+                                                                    backgroundColor: statusColors[ticket.status] || 'white',
+                                                                    padding: '4px 8px',
+                                                                    borderRadius: '8px',
+                                                                    display: 'inline-block'
+                                                                }}>
+                                                                    {ticket.status}
+                                                                </span>
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    ))}
+                                                </TableBody>
+                                            </Table>
+                                        </TableContainer>
+                                        <Button variant="contained" color="primary" onClick={() => handleSummarizeSprint(sprint)} disabled={loading} sx={{ borderRadius: 2 }}>
+                                            {loading ? <CircularProgress size={24} /> : 'Summarize'}
                                         </Button>
-                                        <Button variant="contained" color="secondary" onClick={() => handleFetchLatestSprintFromDB(board.id)} disabled={loading}>
-                                            {loading ? <CircularProgress size={24} /> : 'Fetch Latest Sprint from DB'}
-                                        </Button>
-                                    </AccordionDetails>
-                                </Accordion>
+                                        <Typography variant="h6" style={{ marginTop: 20 }}>Summary</Typography>
+                                        <Typography>{sprint.summary_ai}</Typography>
+                                    </CardContent>
+                                </Card>
                             </Grid>
                         ))}
                     </Grid>
-                )}
-                {sprints.length > 0 && (
-                    <Container sx={{ marginTop: 4 }}>
-                        <Typography variant="h5" gutterBottom>Sprints</Typography>
-                        <Grid container spacing={3}>
-                            {sprints.map(sprint => (
-                                <Grid item xs={12} md={6} key={sprint.name}>
-                                    <Card>
-                                        <CardContent>
-                                            <Typography variant="h6">{sprint.name}</Typography>
-                                            <List>
-                                                {sprint.tickets.map(ticket => (
-                                                    <ListItem key={ticket.key}>
-                                                        <ListItemText
-                                                            primary={`${ticket.key}: ${ticket.summary}`}
-                                                            secondary={`Status: ${ticket.status}`}
-                                                        />
-                                                    </ListItem>
-                                                ))}
-                                            </List>
-                                            <Button variant="contained" color="primary" onClick={() => handleSummarizeSprint(sprint)} disabled={loading}>
-                                                {loading ? <CircularProgress size={24} /> : 'Summarize'}
-                                            </Button>
-                                            <Typography variant="h6" sx={{ marginTop: 2 }}>Summary</Typography>
-                                            <Typography>{sprint.summary_ai}</Typography>
-                                        </CardContent>
-                                    </Card>
-                                </Grid>
-                            ))}
-                        </Grid>
-                    </Container>
-                )}
-                <Snackbar open={!!error} autoHideDuration={6000} onClose={handleCloseSnackbar}>
-                    <Alert onClose={handleCloseSnackbar} severity="error" sx={{ width: '100%' }}>
-                        {error}
-                    </Alert>
-                </Snackbar>
-                <Snackbar open={!!success} autoHideDuration={6000} onClose={handleCloseSnackbar}>
-                    <Alert onClose={handleCloseSnackbar} severity="success" sx={{ width: '100%' }}>
-                        {success}
-                    </Alert>
-                </Snackbar>
-            </Container>
+                </div>
+            )}
+            <Snackbar open={!!error} autoHideDuration={6000} onClose={handleCloseSnackbar}>
+                <Alert onClose={handleCloseSnackbar} severity="error" style={{ width: '100%' }}>
+                    {error}
+                </Alert>
+            </Snackbar>
+            <Snackbar open={!!success} autoHideDuration={6000} onClose={handleCloseSnackbar}>
+                <Alert onClose={handleCloseSnackbar} severity="success" style={{ width: '100%' }}>
+                    {success}
+                </Alert>
+            </Snackbar>
         </Container>
     );
 };
